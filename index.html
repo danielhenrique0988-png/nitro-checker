@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Nitro Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #5865f2;
+            border-radius: 10px;
+            background: #0f0f1a;
+            color: #fff;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 15px;
+            font-family: monospace;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #7289da;
+        }
+
+        button {
+            background: #5865f2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        button:hover {
+            background: #4752c4;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #444;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result.valid {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+        }
+
+        .result.invalid {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+        }
+
+        .result.error {
+            background: rgba(241, 196, 15, 0.2);
+            border: 1px solid #f1c40f;
+        }
+
+        .result h3 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .result p {
+            color: #ddd;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .status-valid {
+            background: #2ecc71;
+            color: #fff;
+        }
+
+        .status-invalid {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .status-error {
+            background: #f1c40f;
+            color: #000;
+        }
+
+        .progress {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .progress.show {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #2c2c3a;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #5865f2;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            color: #aaa;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .examples {
+            margin-top: 20px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .examples p {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .examples code {
+            display: block;
+            color: #5865f2;
+            font-size: 11px;
+            margin: 3px 0;
+            cursor: pointer;
+        }
+
+        .examples code:hover {
+            color: #7289da;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #555;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Discord Nitro Checker</h1>
+        <div class="subtitle">Verifique se códigos Nitro são válidos</div>
+
+        <textarea id="linksInput" rows="5" placeholder="Cole seus links aqui (um por linha):&#10;https://discord.gift/ABCDEFG&#10;https://discord.com/billing/promotions/XYZ123&#10;https://promos.discord.gg/CODE123"></textarea>
+
+        <button id="checkBtn">🔍 Verificar Links</button>
+
+        <div class="progress" id="progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Verificando...</div>
+        </div>
+
+        <div class="result" id="result">
+            <div class="status-badge" id="statusBadge"></div>
+            <h3 id="resultTitle"></h3>
+            <div id="resultDetails"></div>
+        </div>
+
+        <div class="examples">
+            <p>📋 Exemplos de links (clique para copiar):</p>
+            <code onclick="copyToInput('https://discord.gift/ABCDEFGHIJKLMN')">https://discord.gift/ABCDEFGHIJKLMN</code>
+            <code onclick="copyToInput('https://discord.com/billing/promotions/NITRO-FREE-TRIAL')">https://discord.com/billing/promotions/NITRO-FREE-TRIAL</code>
+            <code onclick="copyToInput('https://promos.discord.gg/123abc-456def')">https://promos.discord.gg/123abc-456def</code>
+        </div>
+
+        <div class="footer">
+            ⚠️ Use com moderação - O Discord tem limites de requisições
+        </div>
+    </div>
+
+    <script>
+        // Função para extrair código do link
+        function extractCode(link) {
+            const patterns = [
+                /discord\.gift\/([a-zA-Z0-9_-]+)/,
+                /discord\.com\/billing\/promotions\/([a-zA-Z0-9_-]+)/,
+                /promos\.discord\.gg\/([a-zA-Z0-9_-]+)/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = link.match(pattern);
+                if (match) return match[1];
+            }
+            return null;
+        }
+
+        // Função para verificar um único link
+        async function checkNitroLink(link) {
+            const code = extractCode(link);
+            if (!code) {
+                return { status: 'error', message: 'Link inválido - formato não reconhecido' };
+            }
+
+            const apiUrl = `https://discord.com/api/v9/entitlements/gift-codes/${code}`;
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.status === 200) {
+                    // Verificar se já foi resgatado
+                    if (data.uses !== undefined && data.max_uses !== undefined && data.uses >= data.max_uses) {
+                        return { status: 'invalid', message: '❌ Código já foi resgatado' };
+                    }
+                    
+                    // Verificar expiração
+                    if (data.expires_at) {
+                        const expires = new Date(data.expires_at);
+                        if (expires < new Date()) {
+                            return { status: 'invalid', message: '⏰ Código expirado' };
+                        }
+                    }
+                    
+                    // Pegar informações do plano
+                    let planType = 'Nitro';
+                    let duration = 'Desconhecida';
+                    
+                    if (data.subscription_plan) {
+                        const planMap = {
+                            '506294741692004352': 'Nitro Basic',
+                            '506294741692004353': 'Nitro Classic',
+                            '506294741692004354': 'Nitro',
+                            '506294741692004355': 'Nitro (Anual)'
+                        };
+                        planType = planMap[data.subscription_plan.id] || 'Nitro';
+                        
+                        if (data.subscription_plan.interval === 'month') {
+                            duration = `${data.subscription_plan.interval_count || 1} mês(es)`;
+                        } else if (data.subscription_plan.interval === 'year') {
+                            duration = `${data.subscription_plan.interval_count || 1} ano(s)`;
+                        }
+                    }
+                    
+                    return {
+                        status: 'valid',
+                        message: '✅ CÓDIGO VÁLIDO!',
+                        plan: planType,
+                        duration: duration,
+                        expires: data.expires_at ? new Date(data.expires_at).toLocaleString('pt-BR') : 'Sem data definida'
+                    };
+                    
+                } else if (response.status === 404) {
+                    return { status: 'invalid', message: '❌ Código não encontrado ou inválido' };
+                } else if (response.status === 429) {
+                    return { status: 'error', message: '⚠️ Rate limit atingido! Aguarde um pouco.' };
+                } else {
+                    return { status: 'error', message: `Erro ${response.status}: ${data.message || 'Desconhecido'}` };
+                }
+                
+            } catch (error) {
+                return { status: 'error', message: `Erro de conexão: ${error.message}` };
+            }
+        }
+
+        // Função para copiar exemplo para o textarea
+        window.copyToInput = function(link) {
+            const textarea = document.getElementById('linksInput');
+            textarea.value = link;
+        };
+
+        // Função principal com delay entre verificações
+        async function checkAllLinks() {
+            const textarea = document.getElementById('linksInput');
+            const links = textarea.value.split('\n').filter(l => l.trim());
+            
+            if (links.length === 0) {
+                alert('Por favor, cole pelo menos um link!');
+                return;
+            }
+            
+            const checkBtn = document.getElementById('checkBtn');
+            const progressDiv = document.getElementById('progress');
+            const resultDiv = document.getElementById('result');
+            
+            checkBtn.disabled = true;
+            checkBtn.textContent = '⏳ Verificando...';
+            progressDiv.classList.add('show');
+            resultDiv.classList.remove('show');
+            
+            let validLinks = [];
+            let checked = 0;
+            
+            for (let i = 0; i < links.length; i++) {
+                const link = links[i].trim();
+                if (!link) continue;
+                
+                // Atualizar progresso
+                const percent = ((i + 1) / links.length) * 100;
+                document.getElementById('progressFill').style.width = `${percent}%`;
+                document.getElementById('progressText').textContent = `Verificando ${i+1}/${links.length}: ${link.substring(0, 50)}...`;
+                
+                const result = await checkNitroLink(link);
+                
+                if (result.status === 'valid') {
+                    validLinks.push({ link, result });
+                    
+                    // Mostrar resultado para este link
+                    resultDiv.classList.add('show');
+                    resultDiv.className = 'result show valid';
+                    document.getElementById('statusBadge').className = 'status-badge status-valid';
+                    document.getElementById('statusBadge').textContent = 'VÁLIDO';
+                    document.getElementById('resultTitle').textContent = result.message;
+                    document.getElementById('resultDetails').innerHTML = `
+                        <p>🔗 Link: ${link}</p>
+                        <p>💎 Plano: ${result.plan}</p>
+                        <p>⏱️ Duração: ${result.duration}</p>
+                        <p>📅 Expira em: ${result.expires}</p>
+                    `;
+                } else if (result.status === 'invalid') {
+                    console.log(`Inválido: ${link} - ${result.message}`);
+                } else if (result.status === 'error') {
+                    console.log(`Erro: ${link} - ${result.message}`);
+                    if (result.message.includes('Rate limit')) {
+                        break;
+                    }
+                }
+                
+                checked++;
+                
+                // Delay entre verificações (2 segundos)
+                if (i < links.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
+            
+            // Resultado final
+            if (validLinks.length > 0) {
+                let resultHtml = `<p>🎉 Encontrados ${validLinks.length} link(s) válido(s)!</p>`;
+                validLinks.forEach(v => {
+                    resultHtml += `<p style="margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 5px;">
+                        <strong>✅ Válido:</strong> ${v.link}<br>
+                        <small>🎁 ${v.result.plan} | ${v.result.duration}</small>
+                    </p>`;
+                });
+                document.getElementById('resultDetails').innerHTML = resultHtml;
+                document.getElementById('resultTitle').textContent = '✨ VERIFICAÇÃO CONCLUÍDA ✨';
+            } else {
+                document.getElementById('resultDetails').innerHTML = '<p>😔 Nenhum link válido encontrado.</p>';
+                document.getElementById('resultTitle').textContent = 'Nenhum código válido';
+                resultDiv.className = 'result show error';
+                document.getElementById('statusBadge').className = 'status-badge status-error';
+                document.getElementById('statusBadge').textContent = 'SEM RESULTADOS';
+            }
+            
+            checkBtn.disabled = false;
+            checkBtn.textContent = '🔍 Verificar Links';
+            progressDiv.classList.remove('show');
+        }
+        
+        document.getElementById('checkBtn').addEventListener('click', checkAllLinks);
+    </script>
+</body>
+</html>
